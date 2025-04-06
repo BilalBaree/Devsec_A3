@@ -1,0 +1,58 @@
+
+version: 2.1
+
+jobs:
+  build:
+    docker:
+      - image: cimg/base:stable
+    steps:
+      - checkout
+      - run:
+          name: Install build tools
+          command: |
+            sudo apt update
+            sudo apt install -y cmake g++
+      - run:
+          name: Build project
+          command: |
+            mkdir -p build
+            cd build
+            cmake ..
+            make
+      - run:
+          name: Run Unit Tests
+          command: ./build/UnitTests
+
+  sonarqube:
+    docker:
+      - image: sonarsource/sonar-scanner-cli
+    steps:
+      - checkout
+      - run:
+          name: Run SonarQube Analysis
+          command: sonar-scanner -Dsonar.projectKey=Devsec_A3 -Dsonar.sources=./src -Dsonar.host.url=$SONAR_HOST_URL -Dsonar.login=$SONAR_TOKEN
+
+  dockerize:
+    docker:
+      - image: cimg/base:stable
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Build Docker Image
+          command: docker build -t bilalbaree/devsec_a3 .
+      - run:
+          name: Push Docker Image
+          command: |
+            echo "$DOCKERHUB_PASS" | docker login -u "bilalbaree" --password-stdin
+            docker push bilalbaree/devsec_a3
+
+workflows:
+  version: 2
+  build_and_deploy:
+    jobs:
+      - build
+      - sonarqube
+      - dockerize:
+          requires:
+            - build
