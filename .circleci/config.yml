@@ -23,13 +23,13 @@ jobs:
           name: Run Unit Tests
           command: ./build/UnitTests
 
-  sonarqube:
-    docker:
-      - image: sonarsource/sonar-scanner-cli
-    steps:
-      - checkout
-      - run:
-          name: Run SonarQube Analysis
+ sonarqube:
+  docker:
+    - image: sonarsource/sonar-scanner-cli
+  steps:
+    - checkout
+    - run:
+        name: Run SonarQube Analysis
         command: |
           sonar-scanner \
             -Dsonar.organization=bilalbaree \
@@ -38,6 +38,7 @@ jobs:
             -Dsonar.cfamily.compile-commands=bw-output/compile_commands.json \
             -Dsonar.host.url=https://sonarcloud.io \
             -Dsonar.token=$SONAR_TOKEN
+
   dockerize:
     docker:
       - image: cimg/base:stable
