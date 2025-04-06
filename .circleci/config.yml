@@ -26,14 +26,19 @@ jobs:
       - attach_workspace:
           at: .
       - run:
-          name: Run SonarQube Analysis
+          name: Check if SonarQube is enabled
           command: |
-            sonar-scanner \
-              -Dsonar.organization=bilalbaree \
-              -Dsonar.projectKey=BilalBaree_Devsec_A3_New \
-              -Dsonar.sources=. \
-              -Dsonar.host.url=https://sonarcloud.io \
-              -Dsonar.token=$SONAR_TOKEN
+            if [ "$SONARQUBE_ENABLED" == "1" ]; then
+              echo "Running SonarQube Analysis..."
+              sonar-scanner \
+                -Dsonar.organization=bilalbaree \
+                -Dsonar.projectKey=BilalBaree_Devsec_A3_New \
+                -Dsonar.sources=. \
+                -Dsonar.host.url=https://sonarcloud.io \
+                -Dsonar.token=$SONAR_TOKEN
+            else
+              echo " ."
+            fi
 
   dockerize:
     docker:
