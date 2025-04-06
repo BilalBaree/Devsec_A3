@@ -1,4 +1,3 @@
-
 version: 2.1
 
 jobs:
@@ -11,33 +10,33 @@ jobs:
           name: Install build tools
           command: |
             sudo apt update
-            sudo apt install -y cmake g++
+            sudo apt install -y cmake g++ clang
       - run:
           name: Build project
           command: |
             mkdir -p build
             cd build
-            cmake ..
+            cmake .. -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
             make
       - run:
           name: Run Unit Tests
           command: ./build/UnitTests
 
- sonarqube:
-  docker:
-    - image: sonarsource/sonar-scanner-cli
-  steps:
-    - checkout
-    - run:
-        name: Run SonarQube Analysis
-        command: |
-          sonar-scanner \
-            -Dsonar.organization=bilalbaree \
-            -Dsonar.projectKey=Devsec_A3_New \
-            -Dsonar.sources=. \
-            -Dsonar.cfamily.compile-commands=bw-output/compile_commands.json \
-            -Dsonar.host.url=https://sonarcloud.io \
-            -Dsonar.token=$SONAR_TOKEN
+  sonarqube:
+    docker:
+      - image: sonarsource/sonar-scanner-cli
+    steps:
+      - checkout
+      - run:
+          name: Run SonarQube Analysis
+          command: |
+            sonar-scanner \
+              -Dsonar.organization=bilalbaree \
+              -Dsonar.projectKey=Devsec_A3_New \
+              -Dsonar.sources=. \
+              -Dsonar.cfamily.compile-commands=build/compile_commands.json \
+              -Dsonar.host.url=https://sonarcloud.io \
+              -Dsonar.token=$SONAR_TOKEN
 
   dockerize:
     docker:
@@ -59,7 +58,9 @@ workflows:
   build_and_deploy:
     jobs:
       - build
-      - sonarqube
+      - sonarqube:
+          requires:
+            - build
       - dockerize:
           requires:
             - build
