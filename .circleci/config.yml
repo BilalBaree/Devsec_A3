@@ -30,8 +30,12 @@ jobs:
       - checkout
       - run:
           name: Run SonarQube Analysis
-          command: sonar-scanner -Dsonar.projectKey=Devsec_A3_New -Dsonar.sources=./src -Dsonar.host.url=$SONAR_HOST_URL -Dsonar.login=$SONAR_TOKEN
-
+          command: sonar-scanner \
+                    -Dsonar.organization=bilalbaree \
+                    -Dsonar.projectKey=Devsec_A3_New \
+                    -Dsonar.sources=. \
+                    -Dsonar.cfamily.compile-commands=bw-output/compile_commands.json \
+                    -Dsonar.host.url=https://sonarcloud.io
   dockerize:
     docker:
       - image: cimg/base:stable
