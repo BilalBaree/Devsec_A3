@@ -21,7 +21,7 @@ jobs:
       - persist_to_workspace:
           root: .
           paths:
-            - build/compile_commands.json
+            - build/compile_commands.json  # Persisting compile_commands.json for later use
 
   sonarqube:
     docker:
@@ -29,14 +29,14 @@ jobs:
     steps:
       - checkout
       - attach_workspace:
-          at: .
+          at: .  # Attaching the workspace so the build artifacts can be used
       - run:
           name: Run SonarQube Analysis
           command: |
             sonar-scanner \
               -Dsonar.organization=bilalbaree \
               -Dsonar.projectKey=Devsec_A3_New \
-              -Dsonar.sources=. \
+              -Dsonar.sources=src  # Ensure this points to the correct source directory
               -Dsonar.cfamily.compile-commands=build/compile_commands.json \
               -Dsonar.host.url=https://sonarcloud.io \
               -Dsonar.token=$SONAR_TOKEN
@@ -46,10 +46,12 @@ jobs:
       - image: cimg/base:stable
     steps:
       - checkout
-      - setup_remote_docker
+      - setup_remote_docker:
+          version: 20.10.7  # Specifying Docker version for compatibility
       - run:
           name: Build Docker Image
-          command: docker build -t bilalbaree/devsec_a3 .
+          command: |
+            docker build -t bilalbaree/devsec_a3 .
       - run:
           name: Push Docker Image
           command: |
