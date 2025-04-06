@@ -3,25 +3,20 @@ version: 2.1
 jobs:
   build:
     docker:
-      - image: cimg/base:stable
+      - image: cimg/python:3.8  # Using Python 3.8 base image
     steps:
       - checkout
       - run:
-          name: Install build tools
+          name: Install dependencies
           command: |
-            sudo apt update
-            sudo apt install -y cmake g++ clang
-      - run:
-          name: Build project
-          command: |
-            mkdir -p build
-            cd build
-            cmake .. -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
-            make
+            python -m venv venv  # Create a virtual environment
+            . venv/bin/activate   # Activate the virtual environment
+            pip install --upgrade pip  # Upgrade pip
+            pip install -r requirements.txt  # Install Python dependencies from requirements.txt
       - persist_to_workspace:
-          root: .
+          root: . 
           paths:
-            - build/compile_commands.json
+            - .  # Save the whole workspace if necessary for the next steps
 
   sonarqube:
     docker:
@@ -37,19 +32,20 @@ jobs:
               -Dsonar.organization=bilalbaree \
               -Dsonar.projectKey=BilalBaree_Devsec_A3_New \
               -Dsonar.sources=. \
-              -Dsonar.cfamily.compile-commands=/tmp/project/build/compile_commands.json \
               -Dsonar.host.url=https://sonarcloud.io \
               -Dsonar.token=$SONAR_TOKEN
 
   dockerize:
     docker:
-      - image: cimg/base:stable
+      - image: cimg/python:3.8
     steps:
       - checkout
       - setup_remote_docker
       - run:
           name: Build Docker Image
-          command: docker build -t bilalbaree/devsec_a3 .
+          command: |
+            # Assuming you have a Dockerfile in your project directory
+            docker build -t bilalbaree/devsec_a3 .
       - run:
           name: Push Docker Image
           command: |
